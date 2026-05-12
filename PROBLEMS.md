@@ -1,5 +1,26 @@
-1-) Açık/Kapalı Prensibi (Open/Closed Principle) İhlali: Şu anki kodun "değişime kapalı" değil.  Yarın yeni bir indirim türü (mesela "Emekli") eklemek istersen, mecburen hesaplama metodunun içine girip orayı kurcalaman gerekecek. İdeal olan, mevcut kodu bozmadan yeni özellik ekleyebilmektir.
-2-) Sıkı Bağlılık (Tight Coupling): sepet sınıfı, indirimlerin matematiksel detaylarını (0.8 ile çarp, 0.7 ile çarp gibi) çok iyi biliyor. Oysa sepetin tek işi ürünleri tutmak olmalıydı; indirim hesaplama mantığı sepete "çakılı" (hardcoded) olmamalı.
-3-) Tek Sorumluluk İlkesi (Single Responsibility Principle) İhlali: sepet sınıfı şu an iki iş yapıyor: Hem ürün listesini yönetiyor hem de kampanya/indirim mantığını yürütüyor.  Bu, ileride kod büyüdüğünde bakım yapmayı çok zorlaştırır.
-4-) Esneklik ve Dinamiklik Eksikliği: İndirim tipleri sadece basit yaylım (string) ifadelerle ("YILBASI") kontrol ediliyor. Kullanıcı çalışma anında (runtime) iki indirimi birleştirmek istese veya karmaşık bir kural gelse, bu if-elif yapısı çöker.
-5-)Bakım Zorluğu (Spagetti Kod Riski): Şu an 3 indirim var ama gerçek bir e-ticaret sitesinde 50 tane indirim olabilir. O zaman senin hesaplama metodun yüzlerce satır elif ile dolacak ve içinde bir hata yaptığında tüm sepetin bozulma riski doğacak.
+# Proje Tasarım Sorunları Analizi
+
+## 1. Kendi Tespit Ettiğim Sorunlar (Manuel Analiz)
+Aşağıdaki sorunlar kodu ilk incelediğimde gözüme çarpan temel tasarım eksiklikleridir:
+
+* **Esneklik Eksikliği:** İndirim eklemek için sürekli `if-else` bloklarını değiştirmek gerekiyordu, bu da kodun bakımını zorlaştırıyordu.
+* **Karmaşık Mantık Yapısı:** Hesaplama mantığı ile ürün yönetimi aynı sınıfın içindeydi, bu durum kodun okunabilirliğini düşürüyordu.
+* **Kod Tekrarı:** Farklı indirim türleri için benzer hesaplama yapıları tekrar ediliyordu.
+* **Genişletilebilirlik Sorunu:** Yeni bir özellik (örneğin bildirim sistemi) eklemek istediğimde ana sınıfın yapısını bozmam gerekiyordu.
+* **Sıkı Bağlılık (Tight Coupling):** Ürünlerin indirim türlerine göbekten bağlı olması, sistemin modüler yapısını bozuyordu.
+
+## 2. Yapay Zeka (AI) Tarafından Tespit Edilen Sorunlar
+AI aracı (Gemini/ChatGPT) kodu analiz ettiğinde şu teknik eksiklikleri raporlamıştır:
+
+* **Single Responsibility Principle (SRP) İhlali:** `sepet` sınıfının hem ürün listesini tutması hem de indirim hesaplaması yapmasının "Tek Sorumluluk İlkesine" aykırı olduğu belirtildi.
+* **Open/Closed Principle İhlali:** Mevcut kodun yeni özelliklere kapalı, değişikliğe ise açık olduğu (yani her yeni özellikte eski kodun değiştirilmesi gerektiği) vurgulandı.
+* **Strateji Eksikliği:** Algoritmaların (indirim türlerinin) nesneleşmediği, fonksiyon içine gömülü kaldığı tespiti yapıldı.
+* **Bildirim Mekanizması Yoksunluğu:** Sepetteki değişikliklerin dış sistemlere (kullanıcıya/stok sistemine) haber verilmesi için bir arayüz eksikliği bildirildi.
+* **Dinamik Yapılandırma Hatası:** Birden fazla indirimin (Örn: Öğrenci indirimi + Kupon) aynı anda uygulanamaması bir yapısal sorun olarak tanımlandı.
+
+## 3. Karşılaştırma ve Analiz
+Kendi gözlemlerim ile AI analizini kıyasladığımda şu sonuçlara ulaştım:
+
+* **Benzerlikler:** Her iki analiz de kodun esnek olmadığını ve yeni özellik eklemenin zor olduğunu (if-else yapısı) ortak bir sorun olarak gördü.
+* **Farklılıklar:** Ben daha çok "okunabilirlik" ve "zorluk" gibi pratik sonuçlara odaklanırken, AI analizi "SRP" ve "Open/Closed" gibi akademik prensipler üzerinden teknik bir yaklaşım sundu.
+* **Kazanım:** AI analizi sayesinde, sorunun sadece "if-else kalabalığı" olmadığını, aslında temel SOLID prensiplerinin ihlal edildiğini fark ettim. Bu durum, çözüm için hangi tasarım örüntülerini (Strategy, Decorator, Observer) kullanmam gerektiğini netleştirdi.
