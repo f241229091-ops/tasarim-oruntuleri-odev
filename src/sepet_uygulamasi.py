@@ -1,5 +1,14 @@
 from abc import ABC, abstractmethod
 
+class Gozlemci(ABC):
+    @abstractmethod
+    def guncelle(self, urun_adi):
+        pass
+
+class BildirimSistemi(Gozlemci):
+    def guncelle(self, urun_adi):
+        print(f"BILDIRIM: Sepete yeni urun eklendi -> {urun_adi}")
+
 class indirimstratejisi(ABC):
     @abstractmethod
     def hesapla(self, fiyat):
@@ -49,24 +58,33 @@ class urunlab:
 class sepet:
     def __init__(self):
         self.liste = []
+        self._gozlemciler = []
+
+    def gozlemci_ekle(self, gozlemci):
+        self._gozlemciler.append(gozlemci)
+
+    def haber_ver(self, urun_adi):
+        for gozlemci in self._gozlemciler:
+            gozlemci.guncelle(urun_adi)
 
     def urunekle(self, urun_nesnesi):
         self.liste.append(urun_nesnesi)
+        self.haber_ver(urun_nesnesi.ad)
 
     def hesapla(self, strateji_veya_tip):
         toplam = sum(u.fiyat for u in self.liste)
-        
         if isinstance(strateji_veya_tip, indirimstratejisi):
             return strateji_veya_tip.hesapla(toplam)
-        
         strateji = indirimfab.indirimolustur(strateji_veya_tip)
         if strateji:
             return strateji.hesapla(toplam)
-        
         return toplam
 
 if __name__ == "__main__":
     sepetim = sepet()
+    bildirim_merkezi = BildirimSistemi()
+    sepetim.gozlemci_ekle(bildirim_merkezi)
+
     sepetim.urunekle(urunlab.urunolustur("Telefon", 1000))
     sepetim.urunekle(urunlab.urunolustur("Kılıf", 100))
 
